@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>gaoshanshanshan</title>
+    <title>函数节流与防抖 · gaoshanshanshan</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -203,12 +203,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/">gaoshan</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">函数节流与防抖</a>
+            </div>
+    </div>
     
     <a class="home-link" href="/">gaoshan</a>
 </header>
@@ -220,24 +231,68 @@
 
 
 
+
+height:50vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+            函数节流与防抖
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">728</span>阅读时长: <span class="post-count reading-time">2 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2018/11/19</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -338,95 +393,62 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/19/throttleAndDebounce/">
-            
-                <span>函数节流与防抖</span>
-        </a>
-        <div class="abstract-content">
-            函数节流与防抖
-函数节流
-&emsp; 当达到了一定的时间间隔就会执行一次。比如水龙头，我们想让水龙头每隔5s中滴一滴水，而不是无限制的滴水，限制了滴水的频率。
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="函数节流与防抖"><a href="#函数节流与防抖" class="headerlink" title="函数节流与防抖"></a>函数节流与防抖</h1><hr>
+<h2 id="函数节流"><a href="#函数节流" class="headerlink" title="函数节流"></a>函数节流</h2><blockquote>
+<p>&emsp; 当达到了一定的时间间隔就会执行一次。比如水龙头，我们想让水龙头每隔5s中滴一滴水，而不是无限制的滴水，限制了滴水的频率。</p>
+</blockquote>
+<p> &emsp;试想一下，当你在页面中监听了window.onresize事件，并且在事件中进行了大量的DOM操作，其高频率的操作可能导致浏览器的崩溃。因为DOM操作比起非DOM操作需要更多的内存和CPU时间。为了绕开这个问题,你可以使用定时器对函数进行节流。</p>
+<p>&emsp; 函数节流的基本思想是，某些代码不能在没有间断的情况连续执行。第一次调用函数时，创建一个定时器，在定时器指定的时间后执行代码。第二次调用函数的时候，它会清除前一次的定时器并重新设置一个。如果前一个定时器已经执行过了，这个定时器就没有意义。如果没有执行,其实就是将其替换为一个新的定时器。目的是在一段时间内只会执行一次函数。看下面示例代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">function throttle(method,delay)&#123;</span><br><span class="line">    let throttle_id;</span><br><span class="line">    return function()&#123;</span><br><span class="line">      if(throttle_id) return;</span><br><span class="line">      throttle_id = setTimeout(()=&gt;&#123;</span><br><span class="line">        method.apply(this,arguments) </span><br><span class="line">        clearTimeout(throttle_id)</span><br><span class="line">      &#125;,delay)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp; throttle函数接受两个参数：要执行哪个函数以及延迟多长时间执行。当调用throttle函数时会返回一个匿名函数，匿名函数中对需要执行的函数进行了一次定时器的包裹。当第一次执行匿名函数的时候，会创建一个定时器，延时执行被包裹的函数，并将定时器的引用保存在了闭包中。当再一次调用匿名函数的时候，就会判断定时器的引用是否存在，如果引用还在（包裹的函数未执行），就不会继续向下执行。</p>
+<h2 id="函数防抖"><a href="#函数防抖" class="headerlink" title="函数防抖"></a>函数防抖</h2><blockquote>
+<p>&emsp; 在一定时间内重复调用一个函数，只执行一次。比如按压弹簧，在放手前一直按压都不回弹，只有在防守的时候才会回弹。</p>
+</blockquote>
+<p>&emsp;常见的场景是，当有一个注册页面，其中用户名的字段不能重复的时候。为了更好的体验，我们通常是在用户输入的过程中异步的去检查用户名是否存在。而用户不停的输入，就会不断地发起校验，造成接口资源的浪费。此时，我们就可以使用防抖函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">function debounce(method,delay)&#123;</span><br><span class="line">		let debounce_id;</span><br><span class="line">		return function()&#123;</span><br><span class="line">			clearTimeout(debounce_id)</span><br><span class="line">			debounce_id = setTimeout(()=&gt;&#123;</span><br><span class="line">				method.apply(this,arguments) </span><br><span class="line">				clearTimeout(debounce_id)</span><br><span class="line">			&#125;,delay)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp; 防抖函数与节流函数原理类似。不同的是，防抖在一定时间内重复调用函数，会重新创建定时器。</p>
 
- &emsp;试想一下，当你在页面中监听了window.onresize事件，并且在事件中进行了大量的DOM操作，其高频率的操作可能导致浏览器的崩溃。因为DOM操作比起非DOM操作需要更多的内存和CPU时间。为了绕开这个问题,你可以使用定时器对函数进行节流。
-&emsp; 函数节流的基本思想是，某些代码不能在没有间断的情况连续执行。第一次调用函数时，创建一个定时器，在定时器指定的时间后执行代码。第二次调用函数的时候，它会清除前...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/19</span>
-            </div>
-            <!-- tags  -->
-            
-        </div>
     </article>
+    <!-- license  -->
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/17/闭包/">
-            
-                <span>闭包</span>
-        </a>
-        <div class="abstract-content">
-            闭包
-闭包的形成与变量的作用域及变量的生存周期密切相关，在了解闭包之前，我们有必要先了解下这两个概念。
-变量的作用域
-变量的作用域，就是指变量的有效范围。作用域分为全局作用域和局部作用域（函数内部)，es6新增了块级作用域。块级作用域的概念这里就不再赘述，可以参考阮一峰老师的    ECMAScript入门
-
-当声明一个变量的时候，在非严格模式下，如果该变量前面没有带上var关键字，这个变量就会变为全局变量，这当然是一种容易造成变量冲突的做法。
-另外一种是使用了var关键字在函数内生命的变量，此时的变量就是局部变量，只有在函数内部可以访问该变量，在函数外访问不到。
-1234567...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/17</span>
-            </div>
-            <!-- tags  -->
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href="/2018/11/16/hello-world/">
-            
-                <span>Hello World</span>
-        </a>
-        <div class="abstract-content">
-            Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post1$ hexo new "My New Post"
-More info: Writing
-Run server1$ hexo server
-More...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/16</span>
-            </div>
-            <!-- tags  -->
-            
-        </div>
-    </article>
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://gaoshanshanshan.github.io">gaoshanshanshan</a>
+            </p><p>原文链接：<a href="https://gaoshanshanshan.github.io/2018/11/19/throttleAndDebounce/">https://gaoshanshanshan.github.io/2018/11/19/throttleAndDebounce/</a>
+            </p><p>发表日期：<a href="https://gaoshanshanshan.github.io/2018/11/19/throttleAndDebounce/">2018-11-19 16:59:03</a>
+            </p><p>更新日期：<a href="https://gaoshanshanshan.github.io/2018/11/19/throttleAndDebounce/">2018-12-09 15:07:44</a>
+            <!-- <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p> -->
+        </p></div>
     
     <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2018/11/17/闭包/" title="闭包">
+                    <div class="prevTitle">闭包</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -511,6 +533,24 @@ More...
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#函数节流与防抖"><span class="toc-number">1.</span> <span class="toc-text">函数节流与防抖</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#函数节流"><span class="toc-number">1.1.</span> <span class="toc-text">函数节流</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#函数防抖"><span class="toc-number">1.2.</span> <span class="toc-text">函数防抖</span></a></li></ol></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -661,6 +701,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     </body>
 </html>

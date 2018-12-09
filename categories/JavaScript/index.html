@@ -346,6 +346,34 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href="/2018/11/19/throttleAndDebounce/">
+            
+                <span>函数节流与防抖</span>
+        </a>
+        <div class="abstract-content">
+            函数节流与防抖
+函数节流
+&emsp; 当达到了一定的时间间隔就会执行一次。比如水龙头，我们想让水龙头每隔5s中滴一滴水，而不是无限制的滴水，限制了滴水的频率。
+
+ &emsp;试想一下，当你在页面中监听了window.onresize事件，并且在事件中进行了大量的DOM操作，其高频率的操作可能导致浏览器的崩溃。因为DOM操作比起非DOM操作需要更多的内存和CPU时间。为了绕开这个问题,你可以使用定时器对函数进行节流。
+&emsp; 函数节流的基本思想是，某些代码不能在没有间断的情况连续执行。第一次调用函数时，创建一个定时器，在定时器指定的时间后执行代码。第二次调用函数的时候，它会清除前...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/11/19</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href="/2018/11/17/闭包/">
             
                 <span>闭包</span>
@@ -485,9 +513,18 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 2
+        Total : 3
         </div>
         <!-- search  -->
         
@@ -500,6 +537,11 @@
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/19</span><a class="archive-post-title" href="/2018/11/19/throttleAndDebounce/">函数节流与防抖</a>
+        </li>
     
     
         <li class="archive-post-item">
