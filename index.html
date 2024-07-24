@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>签到</title>
+    <script src="https://unpkg.com/vue@3.4.27/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/customParseFormat.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/weekday.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/localeData.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/weekOfYear.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/weekYear.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/advancedFormat.js"></script>
+    <script src="https://unpkg.com/dayjs/plugin/quarterOfYear.js"></script>
+    <link
+      type="text/css"
+      href="https://unpkg.com/ant-design-vue@4.2.3/dist/reset.css"
+      media="screen"
+      rel="stylesheet"
+    />
+    <link
+      type="text/css"
+      href="https://unpkg.com/vue-json-pretty@2.4.0/lib/styles.css"
+      media="screen"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/ant-design-vue@4.2.3/dist/antd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue-json-pretty@2.4.0/lib/vue-json-pretty.js"></script>
+    <script src="https://unpkg.com/vue-ls@4.2.0/dist/vue-ls.min.js"></script>
+    <style>
+      .vjs-tree {
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="container" style="padding: 8px 10px 0">
+        <a-config-provider component-size="small">
+          <h3 style="text-align: center; margin-top: 10px; height: 22px">
+            <span> {{contextMap.theme}} </span>
+          </h3>
+          <div style="margin: 10px 0; text-align: right">
+            <span>调试模式</span>
+            <a-switch
+              size="default"
+              style="margin-left: 10px"
+              v-model:checked="debugRef"
+              checked-children="开"
+              un-checked-children="关"
+            />
+          </div>
+          <a-tabs v-model:activeKey="activeKey">
+            <a-tab-pane key="1" tab="最新签到">
+              <a-button
+                type="primary"
+                @click="getNewSignInfo"
+                :loading="newSignInfo.loading"
+                style="margin-bottom: 10px; float: right"
+              >
+                刷新
+              </a-button>
+              <a-descriptions title="最新签到信息">
+                <a-descriptions-item label="签到人"
+                  >{{newSignInfo.name}}</a-descriptions-item
+                >
+                <a-descriptions-item label="部门"
+                  >{{newSignInfo.dept}}</a-descriptions-item
+                >
+                <a-descriptions-item label="签到时间"
+                  >{{newSignInfo.signTime}}</a-descriptions-item
+                >
+              </a-descriptions>
+            </a-tab-pane>
+            <a-tab-pane key="2" tab="已签到列表">
+              <div style="display: flex; justify-content: space-between">
+                <span>签到人数：{{signList.signList.length}}</span>
+                <a-button
+                  type="primary"
+                  @click="getSignList"
+                  :loading="signList.loading"
+                  style="margin-bottom: 10px; float: right"
+                >
+                  刷新
+                </a-button>
+              </div>
+              <a-table
+                :columns="columns"
+                :data-source="signList.signList"
+                :scroll="{ y: 600 }"
+                :pagination="false"
+              >
+              </a-table>
+            </a-tab-pane>
+            <a-tab-pane key="3" tab="我的签到">
+              <a-button type="primary" @click="submitData" style="float: right">
+                签到
+              </a-button>
+              <div style="margin-top: 10px">
+                <vue-json-pretty
+                  editable
+                  editableTrigger="dblclick"
+                  v-model:data="submitState.data"
+                  virtual
+                  :height="350"
+                ></vue-json-pretty>
+              </div>
+              <h3
+                v-show="submitResult.id"
+                style="text-align: center; margin-top: 60px"
+              >
+                签到结果
+              </h3>
+              <div
+                v-show="submitResult.id"
+                style="margin-top: 10px; height: 300px"
+              >
+                <vue-json-pretty
+                  :data="submitResult"
+                  virtual
+                  :height="350"
+                ></vue-json-pretty>
+              </div>
+            </a-tab-pane>
+          </a-tabs>
+
+          <div style="margin-top: 20px"></div>
+        </a-config-provider>
+      </div>
+    </div>
+
+    <script>
+      // 测试模式
+      const storage = VueStorage.useStorage("localStorage").ls;
+      const debug = storage.get("modeDebug", true);
+      const uuid = getUUID();
+      const defaultData = {
+        content: {
+          name: debug ? "dfsfj" : "王高山",
+          dept: debug ? "xxsdfjkl" : "研发部",
+          signature: debug
+            ? "https://ybpt-public.obs.cn-north-4.myhuaweicloud.com/a5212b6393234525444b38d4cee1d358/ykCust/be28a25044034baa838d4c3343d08bcd/%E7%AD%BE%E5%90%8D_b4b736ad69c5456a8919dabc2ee2b330.png"
+            : "https://ybpt-public.obs.cn-north-4.myhuaweicloud.com/a5212b6393234525444b38d4cee1d358/ykCust/473db1f05b804751848db089a9bea588/签名_0a72caa304494e59bbd397bd1142c1ed.png",
+          uuid,
+          sign: `QD_`,
+          queId: "",
+          theme: "",
+          ipAddress: "218.57.140.130, 124.70.126.44, 172.16.21.60",
+          isWx: "是",
+          ua: "mozilla/5.0 (linux; android 11; redmi k60 build/rkq1.200826.002; wv) applewebkit/537.36 (khtml, like gecko) version/4.0 chrome/126.0.6478.122 mobile safari/537.36 xweb/1260053 mmwebsdk/20240501 mmwebid/959 micromessenger/8.0.50.2701(0x28003252) wechat/arm64 weixin nettype/wifi language/zh_cn abi/arm64 edg/126.0.0.0",
+        },
+        formDesignVersion: "",
+        token: "",
+        openId: "",
+      };
+
+      const personNameList = debug
+        ? ["动态二维码1111"]
+        : [
+            "荆书典",
+            "李少敏",
+            "王康欢",
+            "杨含笑",
+            "李燕",
+            "任昊宇",
+            "邢子璠",
+            "刘习",
+            "高先泽",
+            "王常华",
+            "罗学运",
+            "李婷婷",
+            "于妍卉",
+            "李海川",
+            "张传梅",
+            "李克秋",
+            "张珊珊",
+            "亓新明",
+            "张路路",
+            "梁冬雪",
+            "马海峰",
+            "田成平",
+            "刘晓辉",
+            "张厚诚",
+            "陈庆辉",
+            "马树成",
+            "黄其萌",
+            "王建文",
+            "周大鹏",
+            "刘中志",
+            "王高山",
+            "刘文杰",
+            "马永辉",
+            "解彬",
+            "张海滨",
+            "蔡浩然",
+            "陈鹏飞",
+            "崔恩泉",
+            "方萌",
+            "李自强",
+            "吴伟",
+            "张亮亮",
+            "王垒",
+            "沈利",
+            "刘广鑫",
+            "宋庆松",
+            "王云飞",
+            "张涛",
+            "王伟强",
+            "韩冰",
+            "庞春秋",
+            "张国林",
+            "高朋",
+            "前端张涛",
+            "张国栋",
+            "王海川",
+            "石丰源",
+            "苏鹏",
+            "马凯洋",
+            "安鸿效",
+            "王亚",
+            "刘杰",
+            "公佩宇",
+            "李鸿基",
+            "朱清凡",
+            "刘洁菲",
+            "翟玉星",
+          ];
+      Object.assign(window, Vue);
+      //获取uuid
+      function getUUID() {
+        var questionUuid = storage.get("questionUuid");
+        if (questionUuid) {
+          return questionUuid;
+        } else {
+          let questionUuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+            /[xy]/g,
+            function (c) {
+              var r = (Math.random() * 16) | 0,
+                v = c == "x" ? r : (r & 0x3) | 0x8;
+              return v.toString(16);
+            }
+          );
+          storage.set("questionUuid", questionUuid);
+          return questionUuid;
+        }
+      }
+
+      const vue3Composition = {
+        setup() {
+          const debugRef = ref(debug);
+          watch(
+            () => debugRef.value,
+            () => {
+              storage.set("modeDebug", debugRef.value);
+              window.location.reload();
+            }
+          );
+          const activeKey = ref("3");
+
+          // 获取签到信息
+          const contextMap = reactive({
+            // 测试环境
+            debug,
+            domain: debug
+              ? "http://lctest.yibiao163.cn"
+              : "https://dalu.yibiao163.cn",
+            appCode: "TyQff7e3hi9Tw3k",
+            moduleCode: "tGuHzGbamoytfYt",
+            queCode: "",
+            theme: "",
+          });
+          const submitState = reactive({
+            val: JSON.stringify(defaultData),
+            data: defaultData,
+          });
+
+          watch(
+            () => submitState.val,
+            (newVal) => {
+              try {
+                submitState.data = JSON.parse(newVal);
+              } catch (err) {
+                // console.log('JSON ERROR');
+              }
+            }
+          );
+
+          watch(
+            () => submitState.data,
+            (newVal) => {
+              try {
+                submitState.val = JSON.stringify(newVal);
+              } catch (err) {
+                // console.log('JSON ERROR');
+              }
+            }
+          );
+
+          function getQueInfo() {
+            Promise.all([
+              axios.get(
+                `${contextMap.domain}/nai/lowcode/editor/v1/questionnaire/last/${contextMap.appCode}/${contextMap.moduleCode}`
+              ),
+              axios.get(
+                `${contextMap.domain}/nai/lowcode/editor/v1/formDesign/code?moduleCode=${contextMap.moduleCode}&appCode=${contextMap.appCode}`
+              ),
+            ]).then(([queResp, designResp]) => {
+              if (queResp.data && queResp.data.status == "0") {
+                const data = queResp.data.data;
+                contextMap.queCode = data.queCode;
+                contextMap.theme = data.content.theme;
+                submitState.data.content.queId = data.id;
+                submitState.data.content.sign = `QD_${submitState.data.content.queId}_${submitState.data.content.uuid}`;
+                submitState.data.content.theme = data.content.theme;
+              }
+              if (designResp.data && designResp.data.status == "0") {
+                const data = designResp.data.data;
+                submitState.data.formDesignVersion = data.version;
+              }
+            });
+          }
+
+          // 获取最新签到信息
+          const newSignInfo = reactive({
+            loading: false,
+            signTime: "",
+            name: "",
+            dept: "",
+          });
+          function getNewSignInfo() {
+            newSignInfo.signTime = "";
+            newSignInfo.name = "";
+            newSignInfo.dept = "";
+            newSignInfo.loading = true;
+            axios
+              .post(
+                `${contextMap.domain}/nai/lowcode/editor/v1/questionnaire/bd/${contextMap.appCode}/${contextMap.moduleCode}/getLastDetailByFormField`,
+                {
+                  fieldCode: "theme",
+                  fieldValue: debug ? personNameList[0] : contextMap.theme,
+                }
+              )
+              .then((res) => {
+                if (res.data && res.data.status == "0") {
+                  if (res.data.data) {
+                    const data = res.data.data;
+                    const content = data.content;
+                    newSignInfo.signTime = new Date(
+                      data.createTime
+                    ).toLocaleString();
+                    newSignInfo.name = content.name;
+                    newSignInfo.dept = content.dept;
+                  } else {
+                    this.$message.warn("暂无签到信息");
+                  }
+                }
+              })
+              .finally(() => {
+                newSignInfo.loading = false;
+              });
+          }
+
+          // 获取签到列表
+          const signList = reactive({
+            loading: false,
+            signList: [],
+          });
+          const columns = [
+            {
+              title: "签到人",
+              dataIndex: "name",
+              key: "name",
+              customRender({ text, record, index, column }) {
+                return Vue.h(
+                  "span",
+                  {
+                    style: {
+                      color: [
+                        "荆书典",
+                        "李少敏",
+                        "王康欢",
+                        "马海峰",
+                        "刘习",
+                        "方萌",
+                      ].includes(text)
+                        ? "red"
+                        : "rgba(0, 0, 0, 0.88)",
+                    },
+                  },
+                  text
+                );
+              },
+            },
+            {
+              title: "签到时间",
+              dataIndex: "signTime",
+              key: "signTime",
+            },
+          ];
+          function getSignList() {
+            signList.signList = [];
+            signList.loading = true;
+            const requestList = personNameList.map((name) => {
+              return axios.post(
+                `${contextMap.domain}/nai/lowcode/editor/v1/questionnaire/bd/${contextMap.appCode}/${contextMap.moduleCode}/getLastDetailByFormField`,
+                {
+                  fieldCode: debug ? "theme" : "name",
+                  fieldValue: name,
+                }
+              );
+            });
+
+            Promise.all(requestList)
+              .then((resList) => {
+                resList.forEach((res) => {
+                  if (res.data && res.data.status == "0" && res.data.data) {
+                    const data = res.data.data;
+                    const content = data.content;
+                    if (debug || data.queCode === contextMap.queCode) {
+                      signList.signList.push({
+                        signTime: new Date(data.createTime).toLocaleString(),
+                        name: content.name,
+                        createTime: data.createTime,
+                      });
+                    }
+                  }
+                });
+                signList.signList.sort(function (a, b) {
+                  return b.createTime - a.createTime;
+                });
+              })
+              .finally(() => {
+                signList.loading = false;
+              });
+          }
+
+          const submitResult = ref({ id: "" });
+          const submitData = () => {
+            antd.Modal.confirm({
+              title: "提示",
+              content: "确定要提交的签到信息",
+              async onOk() {
+                try {
+                  return await axios
+                    .post(
+                      `${contextMap.domain}/nai/lowcode/editor/v1/questionnaire/bd/${contextMap.appCode}/${contextMap.moduleCode}/${contextMap.queCode}/submit`,
+                      Vue.toValue(submitState.data)
+                    )
+                    .then((res) => {
+                      if (res.data && res.data.status == "0") {
+                        antd.message.success("🎉🎉🎉 提交成功");
+                        fetchNewData();
+                      } else {
+                        antd.message.error("💔💔💔 提交失败", res);
+                      }
+                    });
+                } catch (e) {
+                  return console.error("Oops errors!", e);
+                }
+              },
+              onCancel() {},
+            });
+          };
+          function fetchNewData() {
+            axios
+              .post(
+                `${contextMap.domain}/nai/lowcode/editor/v1/questionnaire/bd/${contextMap.appCode}/${contextMap.moduleCode}/getLastDetailByFormField`,
+                {
+                  fieldCode: "name",
+                  fieldValue: submitState.data.content.name,
+                }
+              )
+              .then((res) => {
+                if (res.data && res.data.status == "0") {
+                  submitResult.value = res.data.data;
+                } else {
+                  antd.message.error("没有获取到最新签到数据");
+                }
+              });
+          }
+
+          getQueInfo();
+
+          return {
+            debugRef,
+            activeKey,
+            contextMap,
+            newSignInfo,
+            getNewSignInfo,
+            columns,
+            signList,
+            getSignList,
+            submitState,
+            submitData,
+            submitResult,
+          };
+        },
+      };
+
+      //初始化
+      const app = createApp(vue3Composition);
+      app.use(antd);
+      app.use(VueStorage);
+      app.component("VueJsonPretty", VueJsonPretty.default);
+      app.mount("#app");
+    </script>
+  </body>
+</html>
