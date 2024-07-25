@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>签到</title>
     <script src="https://unpkg.com/vue@3.4.27/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
@@ -46,14 +45,7 @@
             <span> {{contextMap.theme}} </span>
           </h3>
           <div style="margin: 10px 0; text-align: right">
-            <span>调试模式</span>
-            <a-switch
-              size="default"
-              style="margin-left: 10px"
-              v-model:checked="debugRef"
-              checked-children="开"
-              un-checked-children="关"
-            />
+            <a-button type="primary" @click="showDrawer"> 应用配置 </a-button>
           </div>
           <a-tabs v-model:activeKey="activeKey">
             <a-tab-pane key="1" tab="最新签到">
@@ -129,7 +121,66 @@
             </a-tab-pane>
           </a-tabs>
 
-          <div style="margin-top: 20px"></div>
+          <a-drawer
+            v-model:open="drawerFlag"
+            class="custom-class"
+            root-class-name="root-class-name"
+            title="应用配置"
+            placement="right"
+          >
+            <div style="max-width: 100%; overflow: hidden">
+              <div style="margin: 10px 0 20px">
+                <span>调试模式</span>
+                <a-switch
+                  size="default"
+                  style="margin-left: 10px"
+                  v-model:checked="debugRef"
+                  checked-children="开"
+                  un-checked-children="关"
+                />
+              </div>
+              <div>
+                <a-input-search
+                  v-model:value="searchKey"
+                  placeholder="输入姓名查询配置"
+                  style="width: 100%"
+                  @search="getUserInfo"
+                  size="middle"
+                  enter-button="查询"
+                />
+              </div>
+              <a-form
+                style="margin-top: 20px"
+                :model="baseUserInfo"
+                :label-col="{ span: 8 }"
+                :wrapper-col="{ span: 8 }"
+                layout="horizontal"
+                @finish="saveUserInfo"
+              >
+                <a-form-item label="姓名" name="name">
+                  <a-input v-model:value="baseUserInfo.name" />
+                </a-form-item>
+                <a-form-item label="部门" name="dept">
+                  <a-input v-model:value="baseUserInfo.dept" />
+                </a-form-item>
+                <a-form-item label="签名" name="signature">
+                  <img
+                    :src="baseUserInfo.signature"
+                    width="100%"
+                    height="200px"
+                  />
+                </a-form-item>
+                <a-form-item label="ua" name="ua">
+                  <a-textarea v-model:value="baseUserInfo.ua" rows="5" />
+                </a-form-item>
+                <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
+                  <a-button type="primary" html-type="submit" size="middle"
+                    >保存</a-button
+                  >
+                </a-form-item>
+              </a-form>
+            </div>
+          </a-drawer>
         </a-config-provider>
       </div>
     </div>
@@ -137,22 +188,31 @@
     <script>
       // 测试模式
       const storage = VueStorage.useStorage("localStorage").ls;
+      const userInfo = storage.get("userInfo", {
+        name: "",
+        dept: "",
+        signature: "",
+        ua: "",
+      });
       const debug = storage.get("modeDebug", true);
       const uuid = getUUID();
       const defaultData = {
         content: {
-          name: debug ? "dfsfj" : "王高山",
-          dept: debug ? "xxsdfjkl" : "研发部",
+          name: debug ? "dfsfj" : userInfo.name,
+          dept: debug ? "xxsdfjkl" : userInfo.dept,
           signature: debug
             ? "https://ybpt-public.obs.cn-north-4.myhuaweicloud.com/a5212b6393234525444b38d4cee1d358/ykCust/be28a25044034baa838d4c3343d08bcd/%E7%AD%BE%E5%90%8D_b4b736ad69c5456a8919dabc2ee2b330.png"
-            : "https://ybpt-public.obs.cn-north-4.myhuaweicloud.com/a5212b6393234525444b38d4cee1d358/ykCust/473db1f05b804751848db089a9bea588/签名_0a72caa304494e59bbd397bd1142c1ed.png",
+            : userInfo.signature,
+          // "https://ybpt-public.obs.cn-north-4.myhuaweicloud.com/a5212b6393234525444b38d4cee1d358/ykCust/473db1f05b804751848db089a9bea588/签名_0a72caa304494e59bbd397bd1142c1ed.png",
           uuid,
           sign: `QD_`,
           queId: "",
           theme: "",
           ipAddress: "218.57.140.130, 124.70.126.44, 172.16.21.60",
           isWx: "是",
-          ua: "mozilla/5.0 (linux; android 11; redmi k60 build/rkq1.200826.002; wv) applewebkit/537.36 (khtml, like gecko) version/4.0 chrome/126.0.6478.122 mobile safari/537.36 xweb/1260053 mmwebsdk/20240501 mmwebid/959 micromessenger/8.0.50.2701(0x28003252) wechat/arm64 weixin nettype/wifi language/zh_cn abi/arm64 edg/126.0.0.0",
+          ua: debug
+            ? "mozilla/5.0 (linux; android 11; redmi k60 build/rkq1.200826.002; wv) applewebkit/537.36 (khtml, like gecko) version/4.0 chrome/126.0.6478.122 mobile safari/537.36 xweb/1260053 mmwebsdk/20240501 mmwebid/959 micromessenger/8.0.50.2701(0x28003252) wechat/arm64 weixin nettype/wifi language/zh_cn abi/arm64 edg/126.0.0.0"
+            : userInfo.ua,
         },
         formDesignVersion: "",
         token: "",
@@ -257,10 +317,14 @@
             () => debugRef.value,
             () => {
               storage.set("modeDebug", debugRef.value);
-              window.location.reload();
+              antd.message.success("切换成功，请刷新页面");
+              setTimeout(() => {
+                // window.location.reload();
+                location.href = location.href;
+              }, 1200);
             }
           );
-          const activeKey = ref("3");
+          const activeKey = ref("4");
 
           // 获取签到信息
           const contextMap = reactive({
@@ -278,7 +342,7 @@
             val: JSON.stringify(defaultData),
             data: defaultData,
           });
-
+          window.submitState = submitState;
           watch(
             () => submitState.val,
             (newVal) => {
@@ -314,13 +378,21 @@
                 const data = queResp.data.data;
                 contextMap.queCode = data.queCode;
                 contextMap.theme = data.content.theme;
-                submitState.data.content.queId = data.id;
-                submitState.data.content.sign = `QD_${submitState.data.content.queId}_${submitState.data.content.uuid}`;
-                submitState.data.content.theme = data.content.theme;
+                const content = { ...submitState.data.content };
+                content.queId = data.id;
+                content.theme = data.content.theme;
+                content.sign = `QD_${content.queId}_${content.uuid}`;
+                submitState.data = {
+                  ...submitState.data,
+                  content,
+                };
               }
               if (designResp.data && designResp.data.status == "0") {
                 const data = designResp.data.data;
-                submitState.data.formDesignVersion = data.version;
+                submitState.data = {
+                  ...submitState.data,
+                  formDesignVersion: data.version,
+                };
               }
             });
           }
@@ -441,9 +513,15 @@
 
           const submitResult = ref({ id: "" });
           const submitData = () => {
+            if (!submitState.data.content.name) {
+              return antd.message.error("先在应用配置中配置用户信息");
+            }
             antd.Modal.confirm({
               title: "提示",
               content: "确定要提交的签到信息",
+              centered: true,
+              okText: "提交",
+              cancelText: "取消",
               async onOk() {
                 try {
                   return await axios
@@ -484,6 +562,52 @@
               });
           }
 
+          const searchKey = ref(userInfo.name);
+          const baseUserInfo = ref({ ...userInfo });
+          function getUserInfo() {
+            if (!searchKey.value) return antd.message.error("先输入姓名");
+            axios
+              .post(
+                `${contextMap.domain}/nai/lowcode/editor/v1/questionnaire/bd/${contextMap.appCode}/${contextMap.moduleCode}/getLastDetailByFormField`,
+                {
+                  fieldCode: "name",
+                  fieldValue: searchKey.value,
+                }
+              )
+              .then((res) => {
+                if (res.data && res.data.status == "0" && res.data.data) {
+                  const { name, dept, signature, ua } = res.data.data.content;
+                  baseUserInfo.value = {
+                    name,
+                    dept,
+                    signature,
+                    ua,
+                  };
+                } else {
+                  antd.message.error("没有查询到用户信息");
+                }
+              });
+          }
+          function saveUserInfo() {
+            storage.set("userInfo", baseUserInfo.value);
+            const content = { ...submitState.data.content };
+            content.name = baseUserInfo.value.name;
+            content.dept = baseUserInfo.value.dept;
+            content.signature = baseUserInfo.value.signature;
+            content.ua = baseUserInfo.value.ua;
+            submitState.data = {
+              ...submitState.data,
+              content,
+            };
+            // console.log(submitState);
+            antd.message.success("保存成功");
+            drawerFlag.value = false;
+          }
+
+          const drawerFlag = ref(false);
+          function showDrawer() {
+            drawerFlag.value = true;
+          }
           getQueInfo();
 
           return {
@@ -498,6 +622,12 @@
             submitState,
             submitData,
             submitResult,
+            searchKey,
+            baseUserInfo,
+            getUserInfo,
+            saveUserInfo,
+            drawerFlag,
+            showDrawer,
           };
         },
       };
